@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CarsRUs — Transporter Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #161a24;
+  --surface2: #1e2433;
+  --border: #2a3045;
+  --accent: #f0b429;
+  --accent2: #e8431a;
+  --text: #eef0f6;
+  --muted: #7a8299;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --orange: #f97316;
+  --red: #ef4444;
+  --radius: 10px;
+  --sidebar-w: 220px;
+}
+/* Light theme */
+body.light {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #e8ebf0;
+  --border: #d0d5de;
+  --text: #1a1f2e;
+  --muted: #6b7280;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 16px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ===== LAYOUT ===== */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.25s ease;
+}
+/* Collapsed sidebar — icons only */
+.sidebar.collapsed { width: 56px; }
+.sidebar.collapsed .brand-name,
+.sidebar.collapsed .brand-sub,
+.sidebar.collapsed .brand-clock,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-item span:not(.icon),
+.sidebar.collapsed .nav-badge,
+.sidebar.collapsed .employee-badge,
+.sidebar.collapsed .qr-btn { display: none; }
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+.sidebar.collapsed .nav-item .icon { width: auto; font-size: 1.1rem; }
+.sidebar.collapsed .nav-section { padding: 10px 6px 4px; }
+.sidebar.collapsed .sidebar-brand { padding: 14px 8px; text-align: center; }
+.sidebar.collapsed .sidebar-footer { padding: 10px 6px; }
+
+/* Sidebar toggle button */
+.sidebar-toggle {
+  width: 100%;
+  background: var(--surface2);
+  border: none;
+  border-bottom: 1.5px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: right;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+.sidebar-toggle:hover { background: var(--border); color: var(--accent); }
+.sidebar.collapsed .sidebar-toggle { text-align: center; padding: 12px 0; }
+
+.sidebar-brand {
+  padding: 20px 20px 16px;
+  border-bottom: 1.5px solid var(--border);
+}
+.brand-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  line-height: 1;
+}
+.brand-sub {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.brand-clock {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.brand-clock .clock-time {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.brand-clock .clock-date {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.nav-section { padding: 14px 12px 6px; }
+.nav-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: rgba(240,180,41,0.12); color: var(--accent); }
+.nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent2);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1.5px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.employee-badge {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.employee-badge .emp-name { font-weight: 600; color: var(--text); font-size: 0.85rem; }
+.employee-badge .emp-role { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+.qr-btn {
+  width: 100%;
+  padding: 9px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.qr-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== MAIN ===== */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ===== TOP BAR ===== */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--surface);
+  border-bottom: 1.5px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.search-wrap {
+  flex: 1;
+  position: relative;
+  max-width: 420px;
+}
+.search-wrap .icon {
+  position: absolute;
+  left: 13px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px 9px 38px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--muted); }
+
+.topbar-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.view-toggle { display: flex; gap: 2px; background: var(--surface2); border-radius: 8px; padding: 3px; }
+.view-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+.view-btn.active { background: var(--surface); color: var(--text); }
+.btn-checkin {
+  padding: 9px 18px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.btn-checkin:hover { opacity: 0.88; }
+
+/* ===== CONTENT ===== */
+.content { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ===== STATS ROW ===== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.stat-card .s-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.stat-card .s-value {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.stat-card .s-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.s-waiting { color: var(--orange); }
+.s-progress { color: var(--blue); }
+.s-done { color: var(--green); }
+.s-total { color: var(--text); }
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.filter-tabs { display: flex; gap: 4px; }
+.filter-tab {
+  padding: 5px 12px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-tab.active { background: var(--accent); border-color: var(--accent); color: #000; }
+
+/* ===== TABLE VIEW ===== */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+thead th {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  position: sticky;
+  top: 0;
+}
+thead th:hover { color: var(--text); }
+thead th .sort-arrow { margin-left: 4px; opacity: 0.4; }
+thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+tbody tr:hover { background: var(--surface); }
+tbody td {
+  padding: 11px 12px;
+  vertical-align: middle;
+  color: var(--text);
+}
+tbody td.muted { color: var(--muted); }
+.queue-num {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  background: var(--surface2);
+  border-radius: 50%;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent);
+  border: 1.5px solid var(--border);
+}
+.driver-cell .name { font-weight: 600; }
+.driver-cell .carrier { font-size: 0.78rem; color: var(--muted); }
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.status-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-waiting { background: rgba(249,115,22,0.12); color: var(--orange); }
+.status-waiting::before { background: var(--orange); }
+.status-progress { background: rgba(59,130,246,0.12); color: var(--blue); }
+.status-progress::before { background: var(--blue); animation: pulse 1.5s infinite; }
+.status-completed { background: rgba(34,197,94,0.1); color: var(--green); }
+.status-completed::before { background: var(--green); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Clickable rows in list view */
+tbody tr.data-row {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+tbody tr.data-row:hover { background: var(--surface); }
+tbody tr.data-row.expanded { background: rgba(240,180,41,0.06); }
+tbody tr.data-row.saving { opacity: 0.6; pointer-events: none; }
+.driver-card.saving { opacity: 0.6; pointer-events: none; }
+
+/* Saving spinner inline */
+.saving-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+.saving-badge .spin {
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+  font-style: normal;
+}
+
+/* Card modal overlay — shown when a list row is clicked */
+.card-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.card-modal-overlay .driver-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: cardPop 0.2s ease;
+  position: relative;
+}
+@keyframes cardPop {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.card-modal-close {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.card-modal-close:hover { color: var(--text); border-color: var(--muted); }
+
+/* Row action buttons */
+.row-actions { display: flex; gap: 5px; }
+.action-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.action-btn.checkout { border-color: var(--green); color: var(--green); }
+.action-btn.checkout:hover { background: rgba(34,197,94,0.1); }
+.action-btn.start { border-color: var(--blue); color: var(--blue); }
+.action-btn.start:hover { background: rgba(59,130,246,0.1); }
+
+/* ===== CARD VIEW ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+.driver-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+.driver-card:hover { border-color: var(--accent); }
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.card-queue {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+}
+.card-name { font-weight: 600; font-size: 1rem; margin-bottom: 2px; }
+.card-carrier { font-size: 0.8rem; color: var(--muted); }
+.card-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+.card-field { }
+.card-field .cf-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.card-field .cf-val { font-size: 0.88rem; font-weight: 500; }
+.card-actions { display: flex; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.card-actions .action-btn { flex: 1; text-align: center; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 0.9rem; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  overflow-y: auto;
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+}
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { color: var(--text); border-color: var(--muted); }
+.modal-body { padding: 20px 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1.5px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Modal fields */
+.m-field { margin-bottom: 14px; }
+.m-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.m-field label .req { color: var(--accent); margin-left: 2px; }
+.m-field input, .m-field select, .m-field textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.m-field input:focus, .m-field select:focus, .m-field textarea:focus { border-color: var(--accent); }
+.m-field select option { background: var(--surface2); color: var(--text); }
+.m-field textarea { resize: none; min-height: 70px; }
+.m-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.modal-btn.primary { background: var(--accent); color: #000; }
+.modal-btn.primary:hover { opacity: 0.88; }
+.modal-btn.secondary { background: var(--surface2); color: var(--muted); border: 1.5px solid var(--border); }
+.modal-btn.secondary:hover { color: var(--text); }
+.modal-btn.danger { background: rgba(239,68,68,0.15); color: var(--red); border: 1.5px solid rgba(239,68,68,0.3); }
+
+/* Section divider in modal */
+.m-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+}
+.m-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 0.88rem;
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 999;
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+
+/* QR Modal */
+.qr-display {
+  text-align: center;
+  padding: 20px 0;
+}
+.qr-code {
+  width: 180px; height: 180px;
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+  color: #333;
+  padding: 10px;
+  text-align: center;
+}
+.qr-url {
+  font-size: 0.78rem;
+  color: var(--muted);
+  word-break: break-all;
+  background: var(--surface2);
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+/* Loading state */
+.loading-row td {
+  padding: 40px !important;
+  text-align: center;
+  color: var(--muted);
+}
+
+.btn-icon {
+  padding: 7px 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: 'Barlow', sans-serif;
+}
+.btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Role badge */
+.role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.role-admin { background: rgba(240,180,41,0.15); color: var(--accent); }
+.role-user  { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+/* Login screen */
+.login-screen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.login-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+}
+.login-brand {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 2.2rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.login-sub {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.login-field { margin-bottom: 14px; }
+.login-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.login-field input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.login-field input:focus { border-color: var(--accent); }
+.login-error {
+  background: rgba(239,68,68,0.1);
+  border: 1.5px solid rgba(239,68,68,0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.83rem;
+  color: #f87171;
+  margin-bottom: 14px;
+  display: none;
+}
+.login-error.show { display: block; }
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: opacity 0.15s;
+}
+.login-btn:hover { opacity: 0.88; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== NOTES & PHOTOS ===== */
+.notes-photos-section {
+  margin-top: 14px;
+  border-top: 1.5px solid var(--border);
+  padding-top: 12px;
+}
+.np-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.np-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.np-tab.active { background: var(--accent); border-color: var(--accent); color: #000; }
+.np-panel { }
+.np-loading { color: var(--muted); font-size: 0.8rem; padding: 8px 0; }
+.np-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 200px; overflow-y: auto; }
+.np-note-item {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+}
+.np-note-text { color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+.np-note-meta { color: var(--muted); font-size: 0.72rem; display: flex; justify-content: space-between; align-items: center; }
+.np-delete { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0; transition: color 0.15s; }
+.np-delete:hover { color: var(--red); }
+.np-add { display: flex; flex-direction: column; gap: 6px; }
+.np-textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.85rem;
+  resize: none;
+  min-height: 70px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.np-textarea:focus { border-color: var(--accent); }
+.np-btn {
+  align-self: flex-end;
+  padding: 7px 16px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.np-btn:hover { opacity: 0.88; }
+.np-btn.secondary {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+}
+.np-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.np-photo-item { position: relative; border-radius: 8px; overflow: hidden; cursor: pointer; }
+.np-photo-item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; transition: opacity 0.15s; border-radius: 6px 6px 0 0; }
+.np-photo-item:hover img { opacity: 0.85; }
+.np-photo-del {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.7); border: none; border-radius: 50%;
+  color: #fff; width: 22px; height: 22px; font-size: 0.7rem;
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+}
+.np-photo-item:hover .np-photo-del { display: flex; }
+.np-empty { color: var(--muted); font-size: 0.8rem; padding: 8px 0; }
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: var(--surface);
+  border-bottom: 1.5px solid var(--border);
+  flex-shrink: 0;
+  gap: 12px;
+}
+.filter-tabs-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.filter-account {
+  text-align: right;
+  flex-shrink: 0;
+}
+.filter-account .fa-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.filter-account .fa-role {
+  font-size: 0.7rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ===== HAMBURGER ===== */
+.hamburger {
+  display: none;
+  width: 38px; height: 38px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1.15rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== SIDEBAR OVERLAY ===== */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 150;
+}
+.sidebar-overlay.show { display: block; }
+
+/* ===== COLLAPSIBLE SIDEBAR (all screens > 600px) ===== */
+@media (min-width: 601px) {
+  /* Default collapsed on tablet */
+  .sidebar {
+    width: 56px;
+  }
+  /* Expanded state — full width */
+  .sidebar.expanded {
+    width: var(--sidebar-w);
+  }
+  /* Hide labels when not expanded */
+  .sidebar:not(.expanded) .brand-name,
+  .sidebar:not(.expanded) .brand-sub,
+  .sidebar:not(.expanded) .brand-clock,
+  .sidebar:not(.expanded) .nav-label,
+  .sidebar:not(.expanded) .nav-text,
+  .sidebar:not(.expanded) .nav-item span:not(.icon),
+  .sidebar:not(.expanded) .nav-badge,
+  .sidebar:not(.expanded) .employee-badge,
+  .sidebar:not(.expanded) .qr-btn { display: none !important; }
+  .sidebar:not(.expanded) .nav-item {
+    justify-content: center;
+    padding: 10px 0;
+    gap: 0;
+  }
+  .sidebar:not(.expanded) .nav-item .icon { width: auto; font-size: 1.2rem; }
+  .sidebar:not(.expanded) .nav-section { padding: 8px 4px; }
+  .sidebar:not(.expanded) .sidebar-brand { padding: 12px 4px; text-align: center; }
+  .sidebar:not(.expanded) .sidebar-footer { padding: 8px 4px; }
+  .sidebar:not(.expanded) .sidebar-toggle { text-align: center; padding: 12px 0; }
+  .hamburger { display: none !important; }
+}
+
+/* ===== TABLET MOBILE (≤900px) — hamburger sidebar ===== */
+@media (max-width: 600px) {
+  /* Larger base font — scales all rem units up */
+  html { font-size: 18px !important; -webkit-text-size-adjust: 100%; }
+
+  /* Hide stats */
+  .stats-row { display: none !important; }
+
+  /* Hide CSV */
+  .btn-csv { display: none !important; }
+
+  /* Hide list/card toggle — card view only on mobile */
+  .view-toggle { display: none !important; }
+
+  /* Topbar — search on own line */
+  .topbar {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 8px;
+    align-items: center;
+  }
+  .topbar-right {
+    margin-left: auto;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .search-wrap {
+    order: 10;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Filter bar sticky on mobile */
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 8px 12px;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .filter-tabs-group {
+    width: 100%;
+    gap: 5px;
+  }
+  .filter-account { display: none; }
+  .filter-tab {
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Cards */
+  .cards-grid { grid-template-columns: 1fr; }
+  .content { padding: 10px; }
+
+  /* Modals — tighter on mobile */
+  .modal { max-height: 85vh; overflow-y: auto; }
+  .modal-body { padding: 14px 16px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-footer { padding: 12px 16px; }
+  .m-field { margin-bottom: 10px; }
+  .m-field input, .m-field select, .m-field textarea {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+  .m-row { grid-template-columns: 1fr; gap: 0; }
+
+  /* Buttons */
+  .btn-checkin { padding: 8px 12px; font-size: 0.82rem; }
+  .btn-icon { padding: 7px 10px; font-size: 0.85rem; }
+
+  /* Mobile sidebar — overlay, full width, hamburger trigger */
+  .hamburger { display: flex !important; align-items: center; justify-content: center; }
+  .sidebar-toggle { display: none !important; }
+  .sidebar {
+    position: fixed !important;
+    top: 0; left: 0;
+    height: 100% !important;
+    width: var(--sidebar-w) !important;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+  }
+  .sidebar.open { transform: translateX(0) !important; }
+  /* Restore all text labels in mobile overlay */
+  .sidebar .brand-name,
+  .sidebar .brand-sub,
+  .sidebar .brand-clock,
+  .sidebar .nav-label,
+  .sidebar .nav-text { display: block !important; }
+  .sidebar .nav-item span:not(.icon) { display: inline !important; }
+  .sidebar .nav-badge { display: flex !important; }
+  .sidebar .employee-badge,
+  .sidebar .qr-btn { display: block !important; }
+  .sidebar .nav-item { justify-content: flex-start !important; padding: 9px 12px !important; gap: 10px !important; }
+  .sidebar .nav-section { padding: 14px 12px 6px !important; }
+  .sidebar .sidebar-brand { padding: 20px 20px 16px !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">CARS<span style="color:#fff">RUS</span></div>
+    <div class="login-sub">Gate Operations — Staff Login</div>
+    <div class="login-error" id="loginError">Incorrect username or password.</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
+    </div>
+    <button type="button" class="login-btn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">⚙ Settings</span>
+      <button type="button" class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="m-section-label">Google Apps Script Connection</div>
+      <div class="m-field">
+        <label>Apps Script Web App URL <span class="req">*</span></label>
+        <input type="url" id="st-scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div class="m-field">
+        <label>Self Check-In Kiosk URL (for QR code)</label>
+        <input type="url" id="st-checkinUrl" placeholder="https://your-site.netlify.app/checkin-v1.html">
+      </div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:8px;line-height:1.6">
+        The default URLs are hardcoded in the file and work on all devices automatically. Use this only to override them on this specific browser — for example, during testing or if the URL changes temporarily.
+      </div>
+      <div class="m-divider"></div>
+      <div class="m-section-label">Audit Log</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        The audit log records every check-in, check-out, status change and edit. It is stored in the <strong style="color:var(--text)">AuditLog</strong> tab in your Google Sheet.
+      </div>
+      <button type="button" class="modal-btn primary" onclick="exportAuditLog()" style="width:100%">⬇ Export Audit Log as CSV</button>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="modal-btn secondary" onclick="closeModal('settingsModal')">Cancel</button>
+      <button type="button" class="modal-btn primary" onclick="saveSettings()">Save & Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- Autocomplete datalists -->
+<datalist id="carrierList"></datalist>
+<datalist id="driverNameList"></datalist>
+<datalist id="carrierPhoneList"></datalist>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODALS -->
+<!-- Check-In Modal -->
+<div class="modal-overlay" id="checkinModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Check-In</span>
+      <button type="button" class="modal-close" onclick="closeModal('checkinModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="m-section-label">Driver Information</div>
+      <div class="m-field">
+        <label>Driver Name <span class="req">*</span></label>
+        <input type="text" id="ci-driverName" placeholder="Full name" list="driverNameList">
+      </div>
+      <div class="m-field">
+        <label>Driver Phone <span class="req">*</span></label>
+        <input type="tel" id="ci-driverPhone" placeholder="(555) 000-0000">
+      </div>
+      <div class="m-divider"></div>
+      <div class="m-section-label">Carrier Information</div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Carrier Name <span class="req">*</span></label>
+          <input type="text" id="ci-carrier" placeholder="Company name" list="carrierList">
+        </div>
+        <div class="m-field">
+          <label>Carrier Phone</label>
+          <input type="tel" id="ci-carrierPhone" placeholder="(555) 000-0000" list="carrierPhoneList">
+        </div>
+      </div>
+      <div class="m-divider"></div>
+      <div class="m-section-label">Gate & Load Details</div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Gate</label>
+          <select id="ci-gate">
+            <option value="">Unassigned</option>
+            <option value="Gate 1">Gate 1</option>
+            <option value="Gate 2">Gate 2</option>
+          </select>
+        </div>
+        <div class="m-field">
+          <label>Lane</label>
+          <input type="text" id="ci-lane" placeholder="e.g. A3">
+        </div>
+      </div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Drop Off #</label>
+          <input type="number" id="ci-dropOff" placeholder="0" min="0" value="0">
+        </div>
+        <div class="m-field">
+          <label>Pickup #</label>
+          <input type="number" id="ci-pickup" placeholder="0" min="0" value="0">
+        </div>
+      </div>
+      <div class="m-field">
+        <label>Vehicle Types</label>
+        <select id="ci-vehicleTypes">
+          <option value="">Select type...</option>
+          <option>Wholesale</option>
+          <option>RAW</option>
+          <option>Repo</option>
+          <option>No Runner</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="m-field">
+        <label>Comments</label>
+        <textarea id="ci-comments" placeholder="Notes or special instructions..."></textarea>
+      </div>
+      <div class="m-field">
+        <label>Signed In By <span class="req">*</span></label>
+        <input type="text" id="ci-signedInBy" placeholder="Your name or employee ID">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="modal-btn secondary" onclick="closeModal('checkinModal')">Cancel</button>
+      <button type="button" class="modal-btn primary" onclick="submitCheckin()">✓ Check In</button>
+    </div>
+  </div>
+</div>
+
+<!-- Check-Out Modal -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Check Out</span>
+      <button type="button" class="modal-close" onclick="closeModal('checkoutModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="co-driverInfo" style="background:var(--surface2);border-radius:8px;padding:14px;margin-bottom:16px;font-size:0.88rem;color:var(--muted)">
+      </div>
+      <div class="m-field">
+        <label>Signed Out By <span class="req">*</span></label>
+        <input type="text" id="co-signedOutBy" placeholder="Your name or employee ID">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="modal-btn secondary" onclick="closeModal('checkoutModal')">Cancel</button>
+      <button type="button" class="modal-btn primary" style="background:var(--green);color:#000" onclick="submitCheckout()">✓ Confirm Check Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Record Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Edit Record</span>
+      <button type="button" class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Time In shown read-only -->
+      <div id="ed-timeInInfo" style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.82rem;color:var(--muted)">
+        <span style="font-weight:700;letter-spacing:0.08em;text-transform:uppercase;font-size:0.7rem;">Time In</span><br>
+        <span id="ed-timeInVal" style="color:var(--text);font-size:0.9rem"></span>
+      </div>
+      <div class="m-section-label">Driver Information</div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Driver Name</label>
+          <input type="text" id="ed-driverName" placeholder="Full name" list="driverNameList">
+        </div>
+        <div class="m-field">
+          <label>Driver Phone</label>
+          <input type="tel" id="ed-driverPhone" placeholder="(555) 000-0000">
+        </div>
+      </div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Carrier</label>
+          <input type="text" id="ed-carrier" placeholder="Company name" list="carrierList">
+        </div>
+        <div class="m-field">
+          <label>Carrier Phone</label>
+          <input type="tel" id="ed-carrierPhone" placeholder="(555) 000-0000" list="carrierPhoneList">
+        </div>
+      </div>
+      <div class="m-divider"></div>
+      <div class="m-section-label">Schedule & Assignment</div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Date</label>
+          <input type="text" id="ed-date" placeholder="MM/DD/YYYY">
+        </div>
+        <div class="m-field">
+          <label>Time Out</label>
+          <input type="text" id="ed-timeOut" placeholder="e.g. 03:30 PM">
+        </div>
+      </div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Gate</label>
+          <select id="ed-gate">
+            <option value="">Unassigned</option>
+            <option value="Gate 1">Gate 1</option>
+            <option value="Gate 2">Gate 2</option>
+          </select>
+        </div>
+        <div class="m-field">
+          <label>Lane</label>
+          <input type="text" id="ed-lane" placeholder="e.g. A3">
+        </div>
+      </div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Queue Position</label>
+          <input type="number" id="ed-queuePos" min="1">
+        </div>
+        <div class="m-field">
+          <label>Status</label>
+          <select id="ed-status">
+            <option>Waiting</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="m-divider"></div>
+      <div class="m-section-label">Load Details</div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Drop Off #</label>
+          <input type="number" id="ed-dropOff" min="0">
+        </div>
+        <div class="m-field">
+          <label>Pickup #</label>
+          <input type="number" id="ed-pickup" min="0">
+        </div>
+      </div>
+      <div class="m-field">
+        <label>Vehicle Types</label>
+        <select id="ed-vehicleTypes">
+          <option value="">Select type...</option>
+          <option>Wholesale</option>
+          <option>RAW</option>
+          <option>Repo</option>
+          <option>No Runner</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="m-field">
+        <label>Comments</label>
+        <textarea id="ed-comments" placeholder="Notes..."></textarea>
+      </div>
+      <div class="m-divider"></div>
+      <div class="m-section-label">Sign-Off</div>
+      <div class="m-row">
+        <div class="m-field">
+          <label>Signed In By</label>
+          <input type="text" id="ed-signedInBy" placeholder="Employee name or ID">
+        </div>
+        <div class="m-field">
+          <label>Signed Out By</label>
+          <input type="text" id="ed-signedOutBy" placeholder="Employee name or ID">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="modal-btn secondary" onclick="closeModal('editModal')">Cancel</button>
+      <button type="button" class="modal-btn primary" onclick="submitEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Self Check-In QR Code</span>
+      <button type="button" class="modal-close" onclick="closeModal('qrModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="qr-display">
+        <div class="qr-code" id="qrCodeImg">
+          <div style="color:#666;font-size:0.7rem">QR code will appear here when checkin-v1.html URL is configured</div>
+        </div>
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:12px">Direct transporters to scan this code to self check-in</p>
+        <div class="qr-url" id="qrUrl">Set CHECKIN_URL in script config to generate QR</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="modal-btn secondary" onclick="closeModal('qrModal')">Close</button>
+      <button type="button" class="modal-btn primary" onclick="window.print()">Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ===== APP ===== -->
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <button type="button" class="sidebar-toggle" id="sidebarToggleBtn" onclick="toggleSidebarCollapse()" title="Collapse sidebar">‹</button>
+    <div class="sidebar-brand">
+      <div class="brand-name">CARS<span style="color:#fff">RUS</span></div>
+      <div class="brand-sub">Gate Operations</div>
+      <div class="brand-clock">
+        <div class="clock-time" id="clockTime">--:-- --</div>
+        <div class="clock-date" id="clockDate">---</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-item" onclick="openCheckinModal()">
+        <span class="icon">➕</span> <span class="nav-text">New Check-In</span>
+      </div>
+      <div class="nav-item" onclick="openModal('qrModal')">
+        <span class="icon">📱</span> <span class="nav-text">QR Code</span>
+      </div>
+      <div class="nav-item" onclick="loadRecords()">
+        <span class="icon">↺</span> <span class="nav-text">Refresh</span>
+        <span class="nav-badge" id="nav-waiting-count" style="display:none">0</span>
+      </div>
+      <div class="nav-item" id="nav-settings" style="display:none" onclick="openSettingsModal()">
+        <span class="icon">⚙</span> <span class="nav-text">Settings</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="employee-badge">
+        <div class="emp-name" id="sb-empName">Employee</div>
+        <div class="emp-role" id="sb-empRole">Gate Staff</div>
+        <div id="sb-roleBadge" class="role-badge"></div>
+      </div>
+      <button class="qr-btn" onclick="doLogout()" style="margin-top:8px;border-color:var(--red);color:var(--red)">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Config Banner -->
+    <div id="configBanner" style="display:none;background:rgba(240,180,41,0.12);border-bottom:2px solid var(--accent);padding:10px 20px;align-items:center;gap:12px;font-size:0.85rem;color:var(--accent);">
+      ⚙ Apps Script URL not configured — records will not save.
+      <button type="button" onclick="openSettingsModal()" style="padding:5px 14px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.8rem;cursor:pointer;margin-left:auto;">Open Settings</button>
+    </div>
+    <!-- Topbar -->
+    <div class="topbar">
+      <button type="button" class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input class="search-input" type="text" id="searchInput" placeholder="Search drivers, carriers…" oninput="filterRecords()">
+      </div>
+      <div class="topbar-right">
+        <button type="button" class="btn-icon btn-csv" onclick="exportCSV()" title="Export to CSV">⬇ CSV</button>
+        <button type="button" class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-list" onclick="setView('list')">☰ List</button>
+          <button class="view-btn" id="btn-card" onclick="setView('card')">⊞ Cards</button>
+        </div>
+        <button class="btn-checkin" onclick="openCheckinModal()">+ Check In</button>
+      </div>
+    </div>
+
+    <!-- Sticky filter bar (always visible) -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-tabs-group">
+        <button class="filter-tab active" onclick="setFilterTab('All')">All</button>
+        <button class="filter-tab" onclick="setFilterTab('Waiting')">Waiting</button>
+        <button class="filter-tab" onclick="setFilterTab('In Progress')">In Progress</button>
+        <button class="filter-tab" onclick="setFilterTab('Completed')">Completed</button>
+      </div>
+      <div class="filter-account" id="filterAccount">
+        <div class="fa-name" id="fa-name">—</div>
+        <div class="fa-role" id="fa-role">—</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="s-label">Waiting</div>
+          <div class="s-value s-waiting" id="stat-waiting">0</div>
+          <div class="s-sub">In queue</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">In Progress</div>
+          <div class="s-value s-progress" id="stat-progress">0</div>
+          <div class="s-sub">Being served</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Completed</div>
+          <div class="s-value s-done" id="stat-done">0</div>
+          <div class="s-sub">Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Total</div>
+          <div class="s-value s-total" id="stat-total">0</div>
+          <div class="s-sub">All records</div>
+        </div>
+      </div>
+
+      <!-- Section header -->
+      <div class="section-header">
+        <div class="section-title">Transporter Log</div>
+      </div>
+
+      <!-- LIST VIEW -->
+      <div id="listView">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortBy('Queue Position', this)">Queue <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Driver Name', this)">Driver <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Carrier', this)">Carrier <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Lane', this)">Lane <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Check-In Timestamp', this)">Check In <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Time Out', this)">Time Out <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Drop Off', this)">Drop <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Pickup', this)">Pick <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Status', this)">Status <span class="sort-arrow">↕</span></th>
+                <th onclick="sortBy('Gate', this)">Gate <span class="sort-arrow">↕</span></th>
+                <th style="width:28px"></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr class="loading-row"><td colspan="10">Loading records…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CARD VIEW -->
+      <div id="cardView" style="display:none">
+        <div class="cards-grid" id="cardsGrid"></div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ========== CONFIG ==========
+const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynlqKJa834t7wNvBJcazONTXlU4ISYwux2pIB0L2gS-6iEiGImPjiR6aOcxQWyxBekHA/exec";
+const DEFAULT_CHECKIN_URL = "YOUR_CHECKIN_URL_HERE";
+let APPS_SCRIPT_URL = localStorage.getItem('carsrus_script_url') || DEFAULT_APPS_SCRIPT_URL;
+let CHECKIN_URL = localStorage.getItem('carsrus_checkin_url') || DEFAULT_CHECKIN_URL;
+
+// ========== USERS ==========
+const USERS = [
+  { username: 'admin', password: '1234', role: 'admin', displayName: 'Admin' },
+  { username: 'user1', password: 'user1', role: 'user',  displayName: 'User 1' }
+];
+
+// ========== STATE ==========
+let allRecords = [];
+let filteredRecords = [];
+let currentView = 'list';
+let currentFilter = 'All';
+let sortField = 'Queue Position';
+let sortAsc = true;
+let selectedRowId = null;
+let currentUser = null;
+let lastActionTime = 0; // timestamp of last user action — auto-refresh pauses for 90s after
+
+// ========== AUTH ==========
+function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+
+  const user = USERS.find(u => u.username === username && u.password === password);
+  if (!user) {
+    err.classList.add('show');
+    document.getElementById('loginPassword').value = '';
+    return;
+  }
+  err.classList.remove('show');
+  currentUser = user;
+  sessionStorage.setItem('carsrus_user', JSON.stringify(user));
+  applyUserSession();
+  document.getElementById('loginScreen').style.display = 'none';
+  loadRecords();
+}
+
+function doLogout() {
+  currentUser = null;
+  sessionStorage.removeItem('carsrus_user');
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function applyUserSession() {
+  // Sidebar user info
+  document.getElementById('sb-empName').textContent = currentUser.displayName;
+  document.getElementById('sb-empRole').textContent = currentUser.role === 'admin' ? 'Administrator' : 'Gate Staff';
+  const badge = document.getElementById('sb-roleBadge');
+  badge.textContent = currentUser.role === 'admin' ? 'Admin' : 'User';
+  badge.className = 'role-badge ' + (currentUser.role === 'admin' ? 'role-admin' : 'role-user');
+
+  // Filter bar account info
+  document.getElementById('fa-name').textContent = currentUser.displayName;
+  document.getElementById('fa-role').textContent = currentUser.role === 'admin' ? 'Administrator' : 'Gate Staff';
+
+  // Settings nav only visible to admin
+  document.getElementById('nav-settings').style.display = currentUser.role === 'admin' ? 'flex' : 'none';
+
+  // Pre-fill Signed In By with display name
+  document.getElementById('ci-signedInBy').value = currentUser.displayName;
+}
+
+// ========== SIDEBAR (MOBILE) ==========
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ========== SIDEBAR COLLAPSE (TABLET/DESKTOP) ==========
+function toggleSidebarCollapse() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('sidebarToggleBtn');
+  const isNowExpanded = sidebar.classList.toggle('expanded');
+  btn.textContent = isNowExpanded ? '‹ Collapse' : '› Expand';
+  localStorage.setItem('carsrus_sidebar_expanded', isNowExpanded ? '1' : '0');
+}
+
+function applySidebarState() {
+  if (window.innerWidth <= 600) return; // mobile uses hamburger
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('sidebarToggleBtn');
+  const saved = localStorage.getItem('carsrus_sidebar_expanded');
+  // On desktop default to expanded; on tablet default to collapsed
+  const defaultExpanded = window.innerWidth > 1100;
+  const shouldExpand = saved !== null ? saved === '1' : defaultExpanded;
+  if (shouldExpand) {
+    sidebar.classList.add('expanded');
+    if (btn) btn.textContent = '‹ Collapse';
+  } else {
+    sidebar.classList.remove('expanded');
+    if (btn) btn.textContent = '› Expand';
+  }
+}
+
+// ========== AUTOCOMPLETE ==========
+function updateCarrierList() {
+  const unique = field => [...new Set(
+    allRecords.map(r => (r[field] || '').trim()).filter(v => v.length > 0)
+  )].sort();
+
+  const fill = (id, values) => {
+    const dl = document.getElementById(id);
+    if (dl) dl.innerHTML = values.map(v => '<option value="' + esc(v) + '">').join('');
+  };
+
+  fill('carrierList',     unique('Carrier'));
+  fill('driverNameList',  unique('Driver Name'));
+  fill('carrierPhoneList',unique('Carrier Phone'));
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  applyTheme();
+  applySidebarState();
+
+  // Re-apply sidebar state on resize (e.g. rotating iPad)
+  window.addEventListener('resize', applySidebarState);
+
+  // Default to card view on mobile
+  if (window.innerWidth <= 600) {
+    setView('card');
+  }
+
+  // Close sidebar when nav items clicked on mobile
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth <= 900) closeSidebar();
+    });
+  });
+
+  // Restore session if still active (page refresh)
+  const saved = sessionStorage.getItem('carsrus_user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    applyUserSession();
+    document.getElementById('loginScreen').style.display = 'none';
+    loadRecords();
+  }
+
+  // Enter key on login fields
+  ['loginUsername','loginPassword'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+
+  setInterval(() => {
+    if (!currentUser) return;
+    // Don't auto-refresh within 90 seconds of a user action — sheet may not have saved yet
+    if (Date.now() - lastActionTime < 90000) return;
+    const modalOpen = ['checkinModal','checkoutModal','editModal']
+      .some(id => document.getElementById(id).classList.contains('open'));
+    if (!modalOpen) loadRecords(true);
+  }, 300000); // every 5 minutes
+});
+
+// ========== DATA ==========
+
+// Formats a raw value from Google Sheets into a readable date or time string.
+// Extracts values directly from the ISO string to avoid timezone shift issues.
+function formatSheetDate(val) {
+  if (!val) return '';
+  // Already formatted as MM/DD/YYYY — return as-is
+  if (typeof val === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) return val;
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return val;
+  return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+}
+
+function formatSheetTime(val) {
+  if (!val) return '';
+  // Already formatted (e.g. "09:52 AM") — return as-is
+  if (typeof val === 'string' && /^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(val)) return val;
+  // Parse the ISO string and convert to local time
+  if (typeof val === 'string' && val.includes('T')) {
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+  }
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return val;
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function formatRecords(records) {
+  return records.map(r => ({
+    ...r,
+    'Date':     formatSheetDate(r['Date']),
+    'Time In':  formatSheetTime(r['Time In']),
+    'Time Out': formatSheetTime(r['Time Out']),
+  }));
+}
+
+async function loadRecords(silent = false) {
+  if (!APPS_SCRIPT_URL) {
+    showConfigBanner();
+    return;
+  }
+  // Silent refresh — skip if a user action happened recently
+  if (silent && Date.now() - lastActionTime < 90000) return;
+  // Show skeleton only on first load when no records exist yet
+  if (!silent && !allRecords.length) {
+    document.getElementById('tableBody').innerHTML =
+      '<tr class="loading-row"><td colspan="10" style="text-align:center;padding:30px;color:var(--muted)"><span style="display:inline-block;animation:spin 0.8s linear infinite;font-size:1.2rem">⟳</span> Loading records…</td></tr>';
+    document.getElementById('cardsGrid').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:var(--muted)"><span style="display:inline-block;animation:spin 0.8s linear infinite;font-size:1.5rem">⟳</span></div>';
+  }
+  // Retry up to 2 times to handle Google cold starts
+  for (let attempt = 0; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=getAll`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      allRecords = formatRecords(data.records || []);
+      hideConfigBanner();
+      updateCarrierList();
+      filterRecords();
+      updateStats();
+      return; // success — exit
+    } catch (err) {
+      if (attempt < 2) {
+        await new Promise(r => setTimeout(r, 3000)); // wait 3s before retry
+        continue;
+      }
+      // All retries exhausted
+      if (!silent) showToast('⚠ Could not reach Google Sheet. Showing last known data.', 'error');
+      filterRecords();
+      updateStats();
+    }
+  }
+}
+
+function showConfigBanner() {
+  document.getElementById('configBanner').style.display = 'flex';
+  document.getElementById('tableBody').innerHTML = '<tr class="loading-row"><td colspan="10">⚙ Configure the Apps Script URL in Settings to load records.</td></tr>';
+}
+function hideConfigBanner() {
+  document.getElementById('configBanner').style.display = 'none';
+}
+
+// ========== FILTERING & SORTING ==========
+function filterRecords() {
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  const s = v => String(v || '').toLowerCase();
+  filteredRecords = allRecords.filter(r => {
+    const matchFilter = currentFilter === 'All' || r['Status'] === currentFilter;
+    const matchSearch = !search ||
+      s(r['Driver Name']).includes(search) ||
+      s(r['Carrier']).includes(search) ||
+      s(r['Driver Phone']).includes(search) ||
+      s(r['Carrier Phone']).includes(search) ||
+      s(r['Lane']).includes(search) ||
+      s(r['Gate']).includes(search) ||
+      s(r['Vehicle Types']).includes(search) ||
+      s(r['Comments']).includes(search) ||
+      s(r['Status']).includes(search) ||
+      s(r['Signed In By']).includes(search) ||
+      s(r['Signed Out By']).includes(search);
+    return matchFilter && matchSearch;
+  });
+
+  // Sort
+  filteredRecords.sort((a, b) => {
+    const aCompleted = a['Status'] === 'Completed';
+    const bCompleted = b['Status'] === 'Completed';
+
+    // Completed records always sort newest first by timestamp, regardless of sort field
+    if (aCompleted && bCompleted) {
+      const aTs = Number(a['Check-In Timestamp']) || 0;
+      const bTs = Number(b['Check-In Timestamp']) || 0;
+      return bTs - aTs; // newest first
+    }
+    // Active records sort to top, completed to bottom
+    if (aCompleted && !bCompleted) return 1;
+    if (!aCompleted && bCompleted) return -1;
+
+    // Both active — sort by queue timestamp chronologically
+    if (sortField === 'Queue Position') {
+      const aTs = Number(a['Check-In Timestamp']) || 0;
+      const bTs = Number(b['Check-In Timestamp']) || 0;
+      return sortAsc ? aTs - bTs : bTs - aTs;
+    }
+    let av = a[sortField] || '', bv = b[sortField] || '';
+    if (!isNaN(av) && !isNaN(bv)) { av = Number(av); bv = Number(bv); }
+    else { av = String(av).toLowerCase(); bv = String(bv).toLowerCase(); }
+    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+
+  // Active records get sequential display positions; completed show blank
+  let displayPos = 1;
+  filteredRecords.forEach(r => {
+    if (r['Status'] === 'Waiting' || r['Status'] === 'In Progress') {
+      r._displayPos = displayPos++;
+    } else {
+      r._displayPos = null; // blank for completed
+    }
+  });
+
+  renderView();
+}
+
+function sortBy(field, el) {
+  if (sortField === field) sortAsc = !sortAsc;
+  else { sortField = field; sortAsc = true; }
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
+  el.closest('th').classList.add('sorted');
+  filterRecords();
+}
+
+function setFilterTab(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent.trim() === filter);
+  });
+  filterRecords();
+}
+
+// ========== RENDERING ==========
+function renderView() {
+  if (currentView === 'list') renderTable();
+  else renderCards();
+}
+
+function setView(v) {
+  closeCardModal();
+  currentView = v;
+  document.getElementById('listView').style.display = v === 'list' ? 'block' : 'none';
+  document.getElementById('cardView').style.display = v === 'card' ? 'block' : 'none';
+  document.getElementById('btn-list').classList.toggle('active', v === 'list');
+  document.getElementById('btn-card').classList.toggle('active', v === 'card');
+  renderView();
+}
+
+function renderTable() {
+  expandedRowId = null;
+  const tbody = document.getElementById('tableBody');
+  if (!filteredRecords.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">No records found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filteredRecords.map(r => {
+    const statusClass = r['Status'] === 'Waiting' ? 'status-waiting' :
+                        r['Status'] === 'In Progress' ? 'status-progress' : 'status-completed';
+    const rid = esc(r['Row ID']);
+    return '<tr class="data-row" data-rowid="' + rid + '" onclick="toggleExpandRow(event,this,\'' + rid + '\')">' +
+      '<td><span class="queue-num">' + (r._displayPos || '—') + '</span></td>' +
+      '<td><div class="driver-cell"><div class="name">' + esc(r['Driver Name']) + '</div><div class="carrier">' + esc(r['Driver Phone']) + '</div></div></td>' +
+      '<td><div class="driver-cell"><div class="name">' + esc(r['Carrier']) + '</div><div class="carrier">' + esc(r['Carrier Phone'] || '') + '</div></div></td>' +
+      '<td class="muted">' + esc(r['Lane'] || '—') + '</td>' +
+      '<td class="muted" style="line-height:1.5">' + (r['Date'] ? esc(r['Date']) + '<br><span style="font-size:0.8em">' + esc(r['Time In'] || '') + '</span>' : esc(r['Time In'] || '—')) + '</td>' +
+      '<td class="muted">' + esc(r['Time Out'] || '—') + '</td>' +
+      '<td style="text-align:center">' + (r['Drop Off'] || 0) + '</td>' +
+      '<td style="text-align:center">' + (r['Pickup'] || 0) + '</td>' +
+      '<td><span class="status-badge ' + statusClass + '">' + esc(r['Status']) + '</span></td>' +
+      '<td class="muted">' + esc(r['Gate'] || '—') + '</td>' +
+      '<td><span style="color:var(--muted);font-size:0.75rem">▼</span></td>' +
+      '</tr>';
+  }).join('');
+}
+
+let expandedRowId = null;
+
+function toggleExpandRow(e, tr, rowId) {
+  if (e.target.closest('button')) return;
+
+  // If clicking the same row again, close the modal
+  if (expandedRowId === rowId) {
+    closeCardModal();
+    return;
+  }
+
+  expandedRowId = rowId;
+
+  // Mark row as expanded
+  document.querySelectorAll('tbody tr.data-row').forEach(r => r.classList.remove('expanded'));
+  tr.classList.add('expanded');
+
+  const r = filteredRecords.find(x => x['Row ID'] === rowId);
+  if (!r) return;
+
+  const statusClass = r['Status'] === 'Waiting' ? 'status-waiting' :
+                      r['Status'] === 'In Progress' ? 'status-progress' : 'status-completed';
+  const actions = buildActions(r);
+  const canEdit = currentUser && (currentUser.role === 'admin' || currentUser.role === 'user');
+
+  // Build card HTML matching the card view exactly
+  const cardHtml =
+    '<div class="card-top">' +
+      '<div>' +
+        '<div class="card-name">' + esc(r['Driver Name']) + '</div>' +
+        '<div class="card-carrier">' + esc(r['Carrier']) + '</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div class="card-queue">' + (r._displayPos ? '#' + r._displayPos : '—') + '</div>' +
+        '<span class="status-badge ' + statusClass + '">' + esc(r['Status']) + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="card-fields">' +
+      '<div class="card-field"><div class="cf-label">Driver Phone</div><div class="cf-val">' + esc(r['Driver Phone'] || '—') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Carrier Phone</div><div class="cf-val">' + esc(r['Carrier Phone'] || '—') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Check In</div><div class="cf-val">' + esc(r['Date'] || '—') + ' ' + esc(r['Time In'] || '') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Time Out</div><div class="cf-val">' + esc(r['Time Out'] || '—') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Drop Off</div><div class="cf-val">' + (r['Drop Off'] || 0) + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Pickup</div><div class="cf-val">' + (r['Pickup'] || 0) + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Gate</div><div class="cf-val">' + esc(r['Gate'] || '—') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Lane</div><div class="cf-val">' + esc(r['Lane'] || '—') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Type</div><div class="cf-val">' + esc(r['Vehicle Types'] || '—') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Signed In By</div><div class="cf-val">' + esc(r['Signed In By'] || '—') + '</div></div>' +
+      '<div class="card-field"><div class="cf-label">Signed Out By</div><div class="cf-val">' + esc(r['Signed Out By'] || '—') + '</div></div>' +
+    '</div>' +
+    (r['Comments'] ? '<div style="font-size:0.78rem;color:var(--muted);padding:8px 0;border-top:1px solid var(--border);margin-top:4px">' + esc(r['Comments']) + '</div>' : '') +
+    '<div class="card-actions">' + actions + '</div>' +
+    '<div class="notes-photos-section" id="notePhotosSection-' + esc(r['Row ID']) + '">' +
+      '<div class="np-tabs">' +
+        '<button type="button" class="np-tab active" onclick="switchNPTab(this,\'notes\',\'' + esc(r['Row ID']) + '\')">📝 Notes</button>' +
+        '<button type="button" class="np-tab" onclick="switchNPTab(this,\'photos\',\'' + esc(r['Row ID']) + '\')">📷 Photos</button>' +
+      '</div>' +
+      '<div class="np-panel" id="notesPanel-' + esc(r['Row ID']) + '">' +
+        '<div class="np-list" id="notesList-' + esc(r['Row ID']) + '"><div class="np-loading">Loading notes...</div></div>' +
+        (canEdit ? '<div class="np-add"><textarea id="noteInput-' + esc(r['Row ID']) + '" class="np-textarea" placeholder="Add a note… (Ctrl+Enter to submit)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key===\'Enter\'){event.preventDefault();submitNote(\'' + esc(r['Row ID']) + '\')}"></textarea>' +
+        '<button type="button" class="np-btn" onclick="submitNote(\'' + esc(r['Row ID']) + '\')">Add Note</button></div>' : '') +
+      '</div>' +
+      '<div class="np-panel" id="photosPanel-' + esc(r['Row ID']) + '" style="display:none">' +
+        '<div class="np-photo-grid" id="photoGrid-' + esc(r['Row ID']) + '"><div class="np-loading">Loading photos...</div></div>' +
+        (canEdit ? '<div class="np-add"><input type="file" id="photoInput-' + esc(r['Row ID']) + '" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(\'' + esc(r['Row ID']) + '\')">' +
+        '<button type="button" class="np-btn" onclick="document.getElementById(\'photoInput-' + esc(r['Row ID']) + '\').click()">📷 Upload Photos</button></div>' : '') +
+      '</div>' +
+    '</div>';
+
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'card-modal-overlay';
+  overlay.id = 'cardModalOverlay';
+  overlay.onclick = function(ev) { if (ev.target === overlay) closeCardModal(); };
+
+  const card = document.createElement('div');
+  card.className = 'driver-card';
+  card.innerHTML = '<button type="button" class="card-modal-close" onclick="closeCardModal()">✕</button>' + cardHtml;
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  // Load notes and photos
+  loadNotes(r['Row ID']);
+  loadPhotos(r['Row ID']);
+}
+
+function closeCardModal() {
+  const overlay = document.getElementById('cardModalOverlay');
+  if (overlay) overlay.remove();
+  document.querySelectorAll('tbody tr.data-row').forEach(r => r.classList.remove('expanded'));
+  expandedRowId = null;
+}
+
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  if (!filteredRecords.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:2rem;margin-bottom:12px">🚛</div><p>No records found</p></div>';
+    return;
+  }
+
+  grid.innerHTML = filteredRecords.map(r => {
+    const statusClass = r['Status'] === 'Waiting' ? 'status-waiting' :
+                        r['Status'] === 'In Progress' ? 'status-progress' : 'status-completed';
+    const actions = buildActions(r);
+    const rid = esc(r['Row ID']);
+    return `<div class="driver-card" onclick="openCardModal(event,'${rid}')" style="cursor:pointer">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${esc(r['Driver Name'])}</div>
+          <div class="card-carrier">${esc(r['Carrier'])}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="card-queue">${r._displayPos ? '#' + r._displayPos : '—'}</div>
+          <span class="status-badge ${statusClass}">${esc(r['Status'])}</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="card-field"><div class="cf-label">Check In</div><div class="cf-val">${esc(r['Date'] || '—')} ${esc(r['Time In'] || '')}</div></div>
+        <div class="card-field"><div class="cf-label">Time Out</div><div class="cf-val">${esc(r['Time Out'] || '—')}</div></div>
+        <div class="card-field"><div class="cf-label">Drop Off</div><div class="cf-val">${r['Drop Off'] || 0}</div></div>
+        <div class="card-field"><div class="cf-label">Pickup</div><div class="cf-val">${r['Pickup'] || 0}</div></div>
+        <div class="card-field"><div class="cf-label">Lane</div><div class="cf-val">${esc(r['Lane'] || '—')}</div></div>
+        <div class="card-field"><div class="cf-label">Type</div><div class="cf-val" style="font-size:0.78rem">${esc(r['Vehicle Types'] || '—')}</div></div>
+        <div class="card-field"><div class="cf-label">Gate</div><div class="cf-val">${esc(r['Gate'] || '—')}</div></div>
+      </div>
+      ${r['Comments'] ? '<div style="font-size:0.78rem;color:var(--muted);padding:8px 0;border-top:1px solid var(--border);margin-top:4px">' + esc(r['Comments']) + '</div>' : ''}
+      <div class="card-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+function openCardModal(e, rowId) {
+  if (e && e.target.closest('button')) return; // don't open if clicking action buttons
+  const r = filteredRecords.find(x => x['Row ID'] === rowId);
+  if (!r) return;
+  // Reuse the same toggleExpandRow logic with a dummy tr
+  toggleExpandRow({ target: { closest: () => null } }, document.createElement('tr'), rowId);
+}
+
+function buildActions(r) {
+  const id = r['Row ID'];
+  let html = `<button type="button" class="action-btn" onclick="openEditModal('${id}')">Edit</button>`;
+  if (r['Status'] === 'Waiting') {
+    html += `<button type="button" class="action-btn start" onclick="setStatus('${id}','In Progress')">Start</button>`;
+  }
+  if (r['Status'] !== 'Completed') {
+    html += `<button type="button" class="action-btn checkout" onclick="openCheckoutModal('${id}')">Check Out</button>`;
+  }
+  return html;
+}
+
+// ========== STATS ==========
+function updateStats() {
+  const waiting = allRecords.filter(r => r['Status'] === 'Waiting').length;
+  const progress = allRecords.filter(r => r['Status'] === 'In Progress').length;
+  const done = allRecords.filter(r => r['Status'] === 'Completed').length;
+  document.getElementById('stat-waiting').textContent = waiting;
+  document.getElementById('stat-progress').textContent = progress;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-total').textContent = allRecords.length;
+  const badge = document.getElementById('nav-waiting-count');
+  const activeCount = waiting + progress;
+  if (badge) {
+    badge.textContent = activeCount;
+    badge.style.display = activeCount > 0 ? 'inline-flex' : 'none';
+  }
+}
+
+// ========== MODALS ==========
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function openCheckinModal() {
+  document.getElementById('ci-driverName').value = '';
+  document.getElementById('ci-driverPhone').value = '';
+  document.getElementById('ci-carrier').value = '';
+  document.getElementById('ci-carrierPhone').value = '';
+  document.getElementById('ci-gate').value = '';
+  document.getElementById('ci-lane').value = '';
+  document.getElementById('ci-dropOff').value = 0;
+  document.getElementById('ci-pickup').value = 0;
+  document.getElementById('ci-vehicleTypes').value = '';
+  document.getElementById('ci-comments').value = '';
+  document.getElementById('ci-signedInBy').value = currentUser ? currentUser.displayName : '';
+  openModal('checkinModal');
+  setTimeout(() => document.getElementById('ci-driverName').focus(), 100);
+}
+
+function openCheckoutModal(rowId) {
+  closeCardModal();
+  selectedRowId = rowId;
+  const r = allRecords.find(x => x['Row ID'] === rowId);
+  if (r) {
+    document.getElementById('co-driverInfo').innerHTML = `
+      <strong>${esc(r['Driver Name'])}</strong> &mdash; ${esc(r['Carrier'])}<br>
+      <span style="color:var(--muted)">Checked in: ${esc(r['Time In'])} &bull; Queue #${r['Queue Position']}</span>
+    `;
+  }
+  document.getElementById('co-signedOutBy').value = currentUser ? currentUser.displayName : '';
+  openModal('checkoutModal');
+  setTimeout(() => document.getElementById('co-signedOutBy').focus(), 100);
+}
+
+function openEditModal(rowId) {
+  closeCardModal();
+  selectedRowId = rowId;
+  const r = allRecords.find(x => x['Row ID'] === rowId);
+  if (r) {
+    // Read-only Time In display
+    document.getElementById('ed-timeInVal').textContent = r['Time In'] || '—';
+    // Editable fields
+    document.getElementById('ed-driverName').value = r['Driver Name'] || '';
+    document.getElementById('ed-driverPhone').value = r['Driver Phone'] || '';
+    document.getElementById('ed-carrier').value = r['Carrier'] || '';
+    document.getElementById('ed-carrierPhone').value = r['Carrier Phone'] || '';
+    document.getElementById('ed-date').value = r['Date'] || '';
+    document.getElementById('ed-timeOut').value = r['Time Out'] || '';
+    document.getElementById('ed-gate').value = r['Gate'] || '';
+    document.getElementById('ed-lane').value = r['Lane'] || '';
+    document.getElementById('ed-queuePos').value = r['Queue Position'] || '';
+    document.getElementById('ed-status').value = r['Status'] || 'Waiting';
+    document.getElementById('ed-dropOff').value = r['Drop Off'] || 0;
+    document.getElementById('ed-pickup').value = r['Pickup'] || 0;
+    document.getElementById('ed-vehicleTypes').value = r['Vehicle Types'] || '';
+    document.getElementById('ed-comments').value = r['Comments'] || '';
+    document.getElementById('ed-signedInBy').value = r['Signed In By'] || '';
+    document.getElementById('ed-signedOutBy').value = r['Signed Out By'] || '';
+  }
+  openModal('editModal');
+}
+
+// Only allow clicking the backdrop to close non-data-entry modals (QR only)
+// Data entry modals (checkin, checkout, edit) must be closed explicitly via buttons
+// to prevent accidental dismissal while tabbing through fields
+document.getElementById('qrModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('qrModal');
+});
+
+// ========== ACTIONS ==========
+
+// Helper — sends data to Apps Script as a GET request with encoded payload
+// This avoids CORS preflight issues that block POST requests from browsers
+async function callScript(payload, retries = 1) {
+  // Use POST for write actions to avoid URL length limits (especially notes/photos)
+  const writeActions = ['addNote','deleteNote','uploadPhoto','deletePhoto','checkIn','checkOut','updateStatus','updateRecord','login','register','changePassword','updateUser','deleteUser'];
+  if (writeActions.includes(payload.action)) {
+    return callScriptPost(payload);
+  }
+  const params = new URLSearchParams({ data: JSON.stringify(payload) });
+  const url = `${APPS_SCRIPT_URL}?${params.toString()}`;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url);
+      const result = await res.json();
+      if (result.error) throw new Error(result.error);
+      return result;
+    } catch (err) {
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 2000)); // wait 2s before retry
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+async function submitCheckin() {
+  const name    = document.getElementById('ci-driverName').value.trim();
+  const phone   = document.getElementById('ci-driverPhone').value.trim();
+  const carrier = document.getElementById('ci-carrier').value.trim();
+  const signedBy= document.getElementById('ci-signedInBy').value.trim();
+
+  if (!name || !phone || !carrier || !signedBy) {
+    showToast('Please fill in all required fields.', 'error');
+    return;
+  }
+  if (!APPS_SCRIPT_URL) {
+    showToast('⚙ Apps Script URL not configured. Open Settings in the sidebar.', 'error');
+    return;
+  }
+
+  const payload = {
+    action: "checkIn",
+    "Driver Name":  name,
+    "Driver Phone": phone,
+    "Carrier":      carrier,
+    "Carrier Phone":document.getElementById('ci-carrierPhone').value.trim(),
+    "Gate":         document.getElementById('ci-gate').value,
+    "Lane":         document.getElementById('ci-lane').value.trim(),
+    "Drop Off":     document.getElementById('ci-dropOff').value,
+    "Pickup":       document.getElementById('ci-pickup').value,
+    "Vehicle Types":document.getElementById('ci-vehicleTypes').value,
+    "Comments":     document.getElementById('ci-comments').value.trim(),
+    "Signed In By": signedBy
+  };
+
+  // Close modal immediately — don't wait for server
+  closeModal('checkinModal');
+  showToast('✓ ' + name + ' — checking in...', 'success');
+
+  try {
+    const data = await callScript(payload);
+    showToast('✓ ' + name + ' checked in — Queue #' + data.queuePosition, 'success');
+    // Full reload after check-in to get server-assigned Row ID and queue position
+    loadRecords();
+  } catch (err) {
+    showToast('✗ Check-in failed: ' + err.message, 'error');
+    loadRecords();
+  }
+}
+
+async function submitCheckout() {
+  const signedBy = document.getElementById('co-signedOutBy').value.trim();
+  if (!signedBy) {
+    showToast('Please enter who is signing the driver out.', 'error');
+    return;
+  }
+  lastActionTime = Date.now();
+  const rowId = selectedRowId;
+  closeModal('checkoutModal');
+  showToast('Saving checkout...', 'success');
+
+  try {
+    await callScript({ action: "checkOut", "rowId": rowId, "Signed Out By": signedBy });
+    // Confirmed — update local record
+    const idx = allRecords.findIndex(r => r['Row ID'] === rowId);
+    if (idx !== -1) {
+      const now = new Date();
+      allRecords[idx]['Status'] = 'Completed';
+      allRecords[idx]['Signed Out By'] = signedBy;
+      allRecords[idx]['Time Out'] = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      allRecords[idx]['Queue Position'] = '';
+    }
+    filterRecords();
+    updateStats();
+    showToast('✓ Driver checked out successfully', 'success');
+  } catch (err) {
+    showToast('✗ Check out failed — please try again.', 'error');
+  }
+}
+
+async function submitEdit() {
+  lastActionTime = Date.now();
+  const rowId = selectedRowId;
+  const updates = {
+    "Driver Name":  document.getElementById('ed-driverName').value.trim(),
+    "Driver Phone": document.getElementById('ed-driverPhone').value.trim(),
+    "Carrier":      document.getElementById('ed-carrier').value.trim(),
+    "Carrier Phone":document.getElementById('ed-carrierPhone').value.trim(),
+    "Date":         document.getElementById('ed-date').value.trim(),
+    "Time Out":     document.getElementById('ed-timeOut').value.trim(),
+    "Gate":         document.getElementById('ed-gate').value,
+    "Lane":         document.getElementById('ed-lane').value.trim(),
+    "Queue Position":document.getElementById('ed-queuePos').value,
+    "Status":       document.getElementById('ed-status').value,
+    "Drop Off":     document.getElementById('ed-dropOff').value,
+    "Pickup":       document.getElementById('ed-pickup').value,
+    "Vehicle Types":document.getElementById('ed-vehicleTypes').value,
+    "Comments":     document.getElementById('ed-comments').value.trim(),
+    "Signed In By": document.getElementById('ed-signedInBy').value.trim(),
+    "Signed Out By":document.getElementById('ed-signedOutBy').value.trim()
+  };
+  closeModal('editModal');
+  showToast('Saving...', 'success');
+  try {
+    await callScript({
+      action: "updateRecord",
+      "rowId": rowId,
+      "changedBy": currentUser ? currentUser.displayName : "",
+      ...updates
+    });
+    // Confirmed — update local record
+    const idx = allRecords.findIndex(r => r['Row ID'] === rowId);
+    if (idx !== -1) Object.assign(allRecords[idx], updates);
+    filterRecords();
+    updateStats();
+    showToast('✓ Record updated', 'success');
+  } catch (err) {
+    showToast('✗ Update failed — please try again.', 'error');
+  }
+}
+
+async function setStatus(rowId, status) {
+  closeCardModal();
+  lastActionTime = Date.now();
+
+  // Show saving state on matching row and card
+  const row = document.querySelector('tbody tr[data-rowid="' + rowId + '"]');
+  if (row) row.classList.add('saving');
+  document.querySelectorAll('.driver-card').forEach(c => {
+    if (c.innerHTML.includes(rowId)) c.classList.add('saving');
+  });
+
+  try {
+    await callScript({ action: "updateStatus", "rowId": rowId, "status": status, "changedBy": currentUser ? currentUser.displayName : "" });
+    // Confirmed by server — now update screen
+    const idx = allRecords.findIndex(r => r['Row ID'] === rowId);
+    if (idx !== -1) allRecords[idx]['Status'] = status;
+    filterRecords();
+    updateStats();
+    showToast('✓ Status updated to ' + status, 'success');
+  } catch (err) {
+    // Failed — remove saving state, leave record unchanged, ask to retry
+    if (row) row.classList.remove('saving');
+    document.querySelectorAll('.driver-card.saving').forEach(c => c.classList.remove('saving'));
+    showToast('✗ Could not update status — please try again.', 'error');
+  }
+}
+
+// ========== NOTES ==========
+async function loadNotes(rowId) {
+  const list = document.getElementById('notesList-' + rowId);
+  if (!list) return;
+  try {
+    const res = await callScript({ action: 'getNotes', rowId });
+    const notes = res.notes || [];
+    if (!notes.length) {
+      list.innerHTML = '<div class="np-empty">No notes yet.</div>';
+      return;
+    }
+    const canEdit = currentUser && (currentUser.role === 'admin' || currentUser.role === 'user');
+    list.innerHTML = notes.map(n =>
+      '<div class="np-note-item">' +
+        '<div class="np-note-text">' + esc(n.note) + '</div>' +
+        '<div class="np-note-meta">' +
+          '<span>' + esc(n.addedBy) + ' &bull; ' + esc(n.timestamp) + '</span>' +
+          (canEdit ? '<button type="button" class="np-delete" onclick="deleteNote(\'' + esc(n.noteId) + '\',\'' + esc(rowId) + '\')">✕ Delete</button>' : '') +
+        '</div>' +
+      '</div>'
+    ).join('');
+  } catch(e) {
+    if (list) list.innerHTML = '<div class="np-empty">Could not load notes.</div>';
+  }
+}
+
+async function submitNote(rowId) {
+  const input = document.getElementById('noteInput-' + rowId);
+  const note = input ? input.value.trim() : '';
+  if (!note) { showToast('Please enter a note.', 'error'); return; }
+  // Find the Add Note button and disable it while saving
+  const btn = input ? input.closest('.np-add').querySelector('.np-btn') : null;
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '…Saving'; }
+  try {
+    await callScript({ action: 'addNote', rowId, note, addedBy: currentUser ? currentUser.displayName : '' });
+    input.value = '';
+    showToast('✓ Note added', 'success');
+    loadNotes(rowId);
+  } catch(e) {
+    showToast('✗ Could not add note: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
+async function deleteNote(noteId, rowId) {
+  if (!confirm('Delete this note?')) return;
+  try {
+    await callScript({ action: 'deleteNote', noteId });
+    showToast('✓ Note deleted', 'success');
+    loadNotes(rowId);
+  } catch(e) {
+    showToast('✗ Could not delete note.', 'error');
+  }
+}
+
+// ========== PHOTOS ==========
+async function loadPhotos(rowId) {
+  const grid = document.getElementById('photoGrid-' + rowId);
+  if (!grid) return;
+  try {
+    const res = await callScript({ action: 'getPhotos', rowId });
+    const photos = res.photos || [];
+    if (!photos.length) {
+      grid.innerHTML = '<div class="np-empty">No photos yet.</div>';
+      return;
+    }
+    const canEdit = currentUser && (currentUser.role === 'admin' || currentUser.role === 'user');
+    grid.innerHTML = photos.map(p =>
+      '<div class="np-photo-item">' +
+        '<img src="' + esc(p.thumbUrl) + '" alt="' + esc(p.fileName) + '" onclick="window.open(\'' + esc(p.driveUrl) + '\',\'_blank\')" title="Click to open full size">' +
+        (canEdit ? '<button type="button" class="np-photo-del" onclick="event.stopPropagation();deletePhoto(\'' + esc(p.photoId) + '\',\'' + esc(rowId) + '\')">✕</button>' : '') +
+        '<div style="font-size:0.68rem;color:var(--muted);padding:3px 2px 0;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.uploadedBy || '') + '</div>' +
+      '</div>'
+    ).join('');
+  } catch(e) {
+    if (grid) grid.innerHTML = '<div class="np-empty">Could not load photos.</div>';
+  }
+}
+
+async function handlePhotoUpload(rowId) {
+  const input = document.getElementById('photoInput-' + rowId);
+  if (!input || !input.files.length) return;
+  const files = Array.from(input.files);
+  // Find the upload button and disable it
+  const btn = input.closest('.np-add') ? input.closest('.np-add').querySelector('.np-btn') : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading 0/' + files.length + '…'; }
+  let uploaded = 0;
+  let failed = 0;
+  for (const file of files) {
+    try {
+      const base64 = await fileToBase64(file);
+      await callScriptPost({
+        action: 'uploadPhoto',
+        rowId,
+        fileName: file.name,
+        mimeType: file.type,
+        base64,
+        uploadedBy: currentUser ? currentUser.displayName : ''
+      });
+      uploaded++;
+      if (btn) btn.textContent = 'Uploading ' + uploaded + '/' + files.length + '…';
+    } catch(e) {
+      failed++;
+      showToast('✗ Failed: ' + file.name, 'error');
+    }
+  }
+  input.value = '';
+  if (btn) { btn.disabled = false; btn.textContent = '📷 Upload Photos'; }
+  if (uploaded > 0) {
+    showToast('✓ ' + uploaded + ' photo' + (uploaded > 1 ? 's' : '') + ' uploaded' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
+    loadPhotos(rowId);
+  }
+}
+
+async function deletePhoto(photoId, rowId) {
+  if (!confirm('Delete this photo?')) return;
+  try {
+    await callScript({ action: 'deletePhoto', photoId });
+    showToast('✓ Photo deleted', 'success');
+    loadPhotos(rowId);
+  } catch(e) {
+    showToast('✗ Could not delete photo.', 'error');
+  }
+}
+
+function switchNPTab(btn, tab, rowId) {
+  const section = document.getElementById('notePhotosSection-' + rowId);
+  if (!section) return;
+  section.querySelectorAll('.np-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('notesPanel-' + rowId).style.display = tab === 'notes' ? 'block' : 'none';
+  document.getElementById('photosPanel-' + rowId).style.display = tab === 'photos' ? 'block' : 'none';
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('File read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// POST version of callScript for write actions (notes, photos, check-in, etc.)
+async function callScriptPost(payload, retries = 1) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      if (result.error) throw new Error(result.error);
+      return result;
+    } catch (err) {
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 2000));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+// ========== SETTINGS ==========
+function openSettingsModal() {
+  if (!currentUser || currentUser.role !== 'admin') {
+    showToast('⚠ Settings are restricted to admin only.', 'error');
+    return;
+  }
+  document.getElementById('st-scriptUrl').value = APPS_SCRIPT_URL;
+  document.getElementById('st-checkinUrl').value = CHECKIN_URL;
+  openModal('settingsModal');
+}
+
+function saveSettings() {
+  const scriptUrl = document.getElementById('st-scriptUrl').value.trim();
+  const checkinUrl = document.getElementById('st-checkinUrl').value.trim();
+  if (!scriptUrl) {
+    showToast('Please enter the Apps Script URL.', 'error');
+    return;
+  }
+  APPS_SCRIPT_URL = scriptUrl;
+  CHECKIN_URL = checkinUrl;
+  localStorage.setItem('carsrus_script_url', scriptUrl);
+  localStorage.setItem('carsrus_checkin_url', checkinUrl);
+  closeModal('settingsModal');
+  showToast('✓ Settings saved. Connecting to Google Sheet…', 'success');
+  loadRecords();
+}
+
+// ========== CLOCK ==========
+function updateClock() {
+  const now = new Date();
+  const timeEl = document.getElementById('clockTime');
+  const dateEl = document.getElementById('clockDate');
+  if (!timeEl) return;
+  timeEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ========== THEME ==========
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('carsrus_theme', isLight ? 'light' : 'dark');
+  document.getElementById('themeToggle').textContent = isLight ? '🌑' : '🌙';
+}
+
+function applyTheme() {
+  const saved = localStorage.getItem('carsrus_theme');
+  if (saved === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('themeToggle').textContent = '🌑';
+  }
+}
+
+// ========== CSV EXPORT ==========
+function exportCSV() {
+  if (!allRecords.length) {
+    showToast('No records to export.', 'error');
+    return;
+  }
+
+  const columns = [
+    'Date', 'Driver Name', 'Driver Phone', 'Carrier', 'Carrier Phone',
+    'Gate', 'Lane', 'Time In', 'Time Out', 'Drop Off', 'Pickup',
+    'Status', 'Vehicle Types', 'Comments', 'Queue Position',
+    'Est. Wait (min)', 'Signed In By', 'Signed Out By', 'Row ID', 'Check-In Timestamp'
+  ];
+
+  const escape = val => {
+    const s = String(val ?? '');
+    return s.includes(',') || s.includes('"') || s.includes('\n')
+      ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const rows = [
+    columns.join(','),
+    ...allRecords.map(r => columns.map(c => escape(r[c])).join(','))
+  ];
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const dateStr = `${pad(now.getMonth()+1)}${pad(now.getDate())}${now.getFullYear()}`;
+  const timeStr = `${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const filename = `transporter-log-${dateStr}-${timeStr}.csv`;
+
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 250);
+  showToast(`✓ Exported as ${filename}`, 'success');
+}
+
+async function exportAuditLog() {
+  showToast('Fetching audit log...', 'success');
+  try {
+    const res = await callScript({ action: 'getAuditLog' });
+    if (res.error) throw new Error(res.error);
+    const rows = res.rows || [];
+    if (!rows.length) {
+      showToast('No audit log entries found.', 'error');
+      return;
+    }
+
+    const columns = ['Timestamp', 'Action', 'Row ID', 'Driver Name', 'Carrier', 'Changed By', 'Changes', 'Previous Values'];
+    const escCsv = val => {
+      const s = String(val ?? '');
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const csvRows = [
+      columns.join(','),
+      ...rows.map(r => columns.map(c => escCsv(r[c])).join(','))
+    ];
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const dateStr = pad(now.getMonth()+1) + pad(now.getDate()) + now.getFullYear();
+    const timeStr = pad(now.getHours()) + pad(now.getMinutes());
+    const filename = 'auditlog-' + dateStr + '-' + timeStr + '.csv';
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 250);
+    showToast('✓ Exported as ' + filename, 'success');
+  } catch(err) {
+    showToast('✗ Export failed: ' + err.message, 'error');
+  }
+}
+
+// ========== UTILS ==========
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Phone formatting for modal inputs
+['ci-driverPhone','ci-carrierPhone'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', function() {
+    const d = this.value.replace(/\D/g,'').slice(0,10);
+    if (d.length > 6) this.value = `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+    else if (d.length > 3) this.value = `(${d.slice(0,3)}) ${d.slice(3)}`;
+    else if (d.length > 0) this.value = `(${d}`;
+    else this.value = '';
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  // Escape only closes the QR modal and card modal - never data-entry modals
+  if (e.key === 'Escape') {
+    const qr = document.getElementById('qrModal');
+    if (qr.classList.contains('open')) closeModal('qrModal');
+    closeCardModal();
+  }
+  // Inside data-entry modals: block Enter on inputs/selects and advance focus to next field
+  // Block Enter on non-primary buttons to prevent accidental Cancel/Close activation
+  if (e.key === 'Enter' && e.target.closest('#checkinModal, #checkoutModal, #editModal')) {
+    const tag = e.target.tagName.toLowerCase();
+    if (tag === 'input' || tag === 'select') {
+      e.preventDefault();
+      e.stopPropagation();
+      const modal = e.target.closest('.modal');
+      const focusable = Array.from(modal.querySelectorAll('input, select, textarea, button'));
+      const idx = focusable.indexOf(e.target);
+      if (idx !== -1 && idx < focusable.length - 1) focusable[idx + 1].focus();
+    }
+    if (tag === 'button') {
+      if (!e.target.classList.contains('primary')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
