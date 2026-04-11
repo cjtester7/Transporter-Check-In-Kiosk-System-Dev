@@ -2595,9 +2595,9 @@ async function callScriptPost(payload, retries = 1) {
   if (!isValidUrl(APPS_SCRIPT_URL)) throw new Error('Apps Script URL is not configured. Open Settings to set it.');
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      // No Content-Type header — prevents CORS preflight which Apps Script blocks
       const res = await fetch(normalizeUrl(APPS_SCRIPT_URL), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const result = await res.json();
